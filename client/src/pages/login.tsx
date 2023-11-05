@@ -5,7 +5,12 @@ import { FcGoogle } from "react-icons/fc";
 import { auth } from "../utils/FirebaseConfig";
 import axios from "axios";
 import { CHECK_USER_ROUTE } from "../utils/ApiRoutes";
+import { Router, useRouter } from "next/router";
+import { useStateProvider } from "../context/StateContext";
+import { reducerCases } from "../context/constants";
 function Login() {
+  const router = useRouter();
+  const [{}, dispatch] = useStateProvider();
   const handleLogin = async () => {
     const provider = new GoogleAuthProvider();
     const {
@@ -15,7 +20,20 @@ function Login() {
     try {
       if (email) {
         const { data } = await axios.post(CHECK_USER_ROUTE, { email });
-        console.log({data});
+        console.log({ data });
+        if (!data.status) {
+          dispatch({ type: reducerCases.SET_NEW_USER, newUser: true });
+          dispatch({
+            type: reducerCases.SET_USER_INFO,
+            userInfo: {
+              name,
+              email,
+              profileImage,
+              status: "",
+            },
+          });
+          router.push("/onboarding");
+        }
       }
     } catch (error) {
       console.log(error);
